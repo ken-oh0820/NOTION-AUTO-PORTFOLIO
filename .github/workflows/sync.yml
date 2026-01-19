@@ -1,0 +1,32 @@
+name: Notion Portfolio Sync
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10분마다 (UTC 기준)
+  workflow_dispatch:          # 수동 실행 버튼도 생김
+
+jobs:
+  run-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          TRADES_DB_ID: ${{ secrets.TRADES_DB_ID }}
+          POSITIONS_DB_ID: ${{ secrets.POSITIONS_DB_ID }}
+          TRADES_PRICE_MODE: ${{ secrets.TRADES_PRICE_MODE }}
+        run: |
+          python sync.py --apply
